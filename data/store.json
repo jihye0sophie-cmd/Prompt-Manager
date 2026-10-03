@@ -1,0 +1,130 @@
+{
+  "prompts": [
+    {
+      "id": "BLOG-01",
+      "title": "블로그 원고 작성",
+      "category": "blog",
+      "description": "블로그 원고 작성용 기본 프롬프트",
+      "tags": [
+        "블로그",
+        "원고"
+      ],
+      "favorite": true,
+      "updated": "2026-10-03",
+      "content": "[여기에 블로그 원고 작성 프롬프트를 저장하세요.]"
+    },
+    {
+      "id": "BLOG-02",
+      "title": "블로그 본문 이미지 제작",
+      "category": "blog",
+      "description": "완성 원고를 바탕으로 본문 이미지를 제작할 때 사용",
+      "tags": [
+        "블로그",
+        "이미지"
+      ],
+      "favorite": false,
+      "updated": "2026-10-03",
+      "content": "[여기에 블로그 이미지 제작 프롬프트를 저장하세요.]"
+    },
+    {
+      "id": "SHORTS-01",
+      "title": "쇼츠 주제 발굴",
+      "category": "shorts",
+      "description": "쇼츠 주제 후보를 만들고 발전시키는 프롬프트",
+      "tags": [
+        "쇼츠",
+        "기획"
+      ],
+      "favorite": false,
+      "updated": "2026-10-03",
+      "content": "[쇼츠 주제 발굴 프롬프트를 저장하세요.]"
+    },
+    {
+      "id": "SHORTS-02",
+      "title": "쇼츠 대본 작성",
+      "category": "shorts",
+      "description": "제목과 주제를 바탕으로 쇼츠용 내레이션 대본 구성",
+      "tags": [
+        "쇼츠",
+        "대본"
+      ],
+      "favorite": true,
+      "updated": "2026-10-03",
+      "content": "[쇼츠 대본 작성 프롬프트를 저장하세요.]"
+    },
+    {
+      "id": "SHORTS-03",
+      "title": "쇼츠 이미지 장면 구성",
+      "category": "shorts",
+      "description": "대본을 장면별로 나누고 이미지 생성 장면을 설계",
+      "tags": [
+        "쇼츠",
+        "이미지"
+      ],
+      "favorite": true,
+      "updated": "2026-10-03",
+      "content": "[쇼츠 이미지 장면 구성 프롬프트를 저장하세요.]"
+    },
+    {
+      "id": "SHORTS-04",
+      "title": "6초 영상 제작 프롬프트",
+      "category": "shorts",
+      "description": "선택 장면을 6초 AI 영상으로 만들기 위한 프롬프트",
+      "tags": [
+        "쇼츠",
+        "영상",
+        "6초"
+      ],
+      "favorite": true,
+      "updated": "2026-10-03",
+      "content": "[6초 영상 제작 프롬프트를 저장하세요.]"
+    },
+    {
+      "id": "CODE-01",
+      "title": "새 기능 구현 요청",
+      "category": "coding",
+      "description": "기존 기능을 보존하면서 새 기능을 추가할 때 사용",
+      "tags": [
+        "바이브코딩",
+        "기능추가"
+      ],
+      "favorite": false,
+      "updated": "2026-10-03",
+      "content": "[새 기능 구현용 공통 프롬프트를 저장하세요.]"
+    },
+    {
+      "id": "CODE-02",
+      "title": "버그 분석 및 수정",
+      "category": "coding",
+      "description": "원인 분석 후 최소 수정으로 해결하는 작업 템플릿",
+      "tags": [
+        "바이브코딩",
+        "버그수정"
+      ],
+      "favorite": true,
+      "updated": "2026-10-03",
+      "content": "[버그 분석 및 수정용 프롬프트를 저장하세요.]"
+    }
+  ],
+  "sites": [
+    {
+      "id": "SITE-01",
+      "title": "ChatGPT",
+      "category": "sites",
+      "siteType": "AI / 글쓰기",
+      "description": "자료 조사, 글쓰기, 기획, 코드 작업에 사용하는 메인 AI 도구",
+      "url": "https://chatgpt.com",
+      "notes": "자주 쓰는 방법이나 팁을 여기에 메모하세요.",
+      "tags": [
+        "AI",
+        "글쓰기"
+      ],
+      "favorite": true,
+      "updated": "2026-10-03"
+    }
+  ],
+  "meta": {
+    "version": 1,
+    "updated": "2026-10-03"
+  }
+}
