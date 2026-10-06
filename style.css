@@ -10,3 +10,6 @@
 
 .sidebarClose{display:none;position:absolute;top:18px;right:18px;width:44px;height:44px;border:0;background:transparent;color:#f5f7fb;font-size:34px;line-height:1;cursor:pointer;z-index:3}
 @media(max-width:900px){#sidebar{position:fixed}.sidebarClose{display:flex;align-items:center;justify-content:center}}
+
+/* Mobile navigation polish */
+@media(max-width:720px){aside#sidebar{width:min(86vw,340px);left:min(-86vw,-340px);padding:28px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:16px 0 40px rgba(0,0,0,.28)}aside#sidebar h2{padding-right:52px;font-size:28px}aside#sidebar .sub{margin-top:12px}aside#sidebar nav{margin-top:28px}aside#sidebar nav button{min-height:50px;padding:14px 16px;font-size:16px}.sidebarClose{display:flex;align-items:center;justify-content:center;top:16px;right:14px;border-radius:12px;background:#1a1e26;font-size:28px}.bottom{padding-top:18px}.bottom button{min-height:48px}#overlay{backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}}
