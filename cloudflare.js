@@ -63,7 +63,7 @@ async function githubPushStore(){
 }
 
 imageUrl=function(ref){
-  return './'+ref.path+'?v='+encodeURIComponent(ref.updated||'');
+  return '/api/reference-image?path='+encodeURIComponent(ref.path)+'&v='+encodeURIComponent(ref.updated||'');
 };
 
 function openSyncSettings(){
