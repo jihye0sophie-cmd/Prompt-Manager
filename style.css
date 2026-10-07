@@ -13,3 +13,20 @@
 
 /* Mobile navigation polish */
 @media(max-width:720px){aside#sidebar{width:min(86vw,340px);left:min(-86vw,-340px);padding:28px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:16px 0 40px rgba(0,0,0,.28)}aside#sidebar h2{padding-right:52px;font-size:28px}aside#sidebar .sub{margin-top:12px}aside#sidebar nav{margin-top:28px}aside#sidebar nav button{min-height:50px;padding:14px 16px;font-size:16px}.sidebarClose{display:flex;align-items:center;justify-content:center;top:16px;right:14px;border-radius:12px;background:#1a1e26;font-size:28px}.bottom{padding-top:18px}.bottom button{min-height:48px}#overlay{backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}}
+
+.spaceCard{min-height:260px}
+.spaceCount{font-size:12px;color:var(--muted);background:#232833;border-radius:999px;padding:5px 9px}
+.spacePreview{display:grid;gap:7px;margin:14px 0 2px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#11151b}
+.spacePreview div{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:center;font-size:13px}
+.spacePreview b{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#2a3040;font-size:11px}
+.spacePreview span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spacePreview small{color:var(--muted);padding-left:32px}
+.spaceHelp{color:var(--muted);margin:0 0 14px}
+.spaceList{display:grid;gap:10px}
+.spaceStep{display:grid;grid-template-columns:42px 1fr;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#0c0e12}
+.spaceStepNo{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#252b36;font-weight:800}
+.spaceStepMain small{color:var(--muted);font-size:11px}
+.spaceStepMain h3{margin:4px 0 5px}
+.spaceStepMain p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.spaceStepActions{display:flex;gap:6px;margin-top:10px}
+@media(max-width:720px){.spaceStep{grid-template-columns:34px 1fr}.spaceStepNo{width:30px;height:30px}.spaceStepActions{flex-wrap:wrap}}
