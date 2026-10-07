@@ -63,7 +63,7 @@ async function githubPushStore(){
 }
 
 imageUrl=function(ref){
-  return 'https://raw.githubusercontent.com/'+GH.owner+'/'+GH.repo+'/'+GH.branch+'/'+ref.path+'?v='+encodeURIComponent(ref.updated||'');
+  return './'+ref.path+'?v='+encodeURIComponent(ref.updated||'');
 };
 
 function openSyncSettings(){
