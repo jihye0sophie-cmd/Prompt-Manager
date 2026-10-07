@@ -84,6 +84,19 @@ export default {
       return handleApi(request, env);
     }
 
+    if (url.pathname === '/api/reference-image') {
+      const path = url.searchParams.get('path') || '';
+      if (!/^assets\/references\/[a-z0-9_-]+\/[a-zA-Z0-9가-힣_.-]+$/.test(path)) {
+        return new Response('Invalid image path', { status: 400 });
+      }
+      const rawUrl = 'https://raw.githubusercontent.com/jihye0sophie-cmd/Prompt-Manager/main/' + path;
+      const upstream = await fetch(rawUrl, { cf: { cacheTtl: 3600, cacheEverything: true } });
+      if (!upstream.ok) return new Response('Image not found', { status: upstream.status });
+      const headers = new Headers(upstream.headers);
+      headers.set('cache-control', 'public, max-age=3600');
+      return new Response(upstream.body, { status: 200, headers });
+    }
+
     return env.ASSETS.fetch(request);
   }
 };
