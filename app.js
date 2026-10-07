@@ -9,6 +9,7 @@ function inferredSpace(x){
   if(x.space)return x.space;
   if(/^WISDOM-/.test(x.id)||/^STYLE-WISDOM-/.test(x.id))return '오늘의 지혜 쇼츠 만들기';
   if(/^STORY-/.test(x.id)||/^STYLE-STORY-/.test(x.id))return '스토리숲 쇼츠 만들기';
+  if(/^SHORTS-\d+$/.test(x.id))return '쇼츠 제작 기본 흐름';
   return '';
 }
 function inferredOrder(x){
