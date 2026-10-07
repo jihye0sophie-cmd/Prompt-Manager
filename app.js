@@ -51,16 +51,60 @@ function bind(){
   document.querySelectorAll('[data-copy]').forEach(function(b){b.onclick=function(){var x=data.prompts.find(function(p){return p.id==b.dataset.copy});copy(x.content)}});
   document.querySelectorAll('[data-go]').forEach(function(b){b.onclick=function(){window.open(b.dataset.go,'_blank','noopener')}})
 }
-function openSpace(name){
+function openSpace(name,activeId){
   var list=spacePrompts(name);
+  if(!list.length)return;
+  var active=activeId?list.find(function(p){return p.id===activeId}):list[0];
+  if(!active)active=list[0];
+  var activeIndex=list.findIndex(function(p){return p.id===active.id});
+
   q('#drawerEye').textContent='PROMPT SPACE';
   q('#drawerTitle').textContent=name;
-  q('#drawerBody').innerHTML='<div class="drawerActions"><button class="primary" id="spaceAdd">+ 프롬프트 추가</button></div><p class="spaceHelp">필요한 순서대로 프롬프트를 열고 복사해서 사용하세요.</p><div class="spaceList">'+list.map(function(p,i){return '<article class="spaceStep"><div class="spaceStepNo">'+(i+1)+'</div><div class="spaceStepMain"><small>'+esc(p.id)+'</small><h3>'+esc(p.title)+'</h3><p>'+esc(p.description||'')+'</p><div class="spaceStepActions"><button class="small" data-space-item-open="'+p.id+'">열기</button><button class="small" data-space-item-copy="'+p.id+'">복사</button><button class="small" data-space-item-edit="'+p.id+'">수정</button></div></div></article>'}).join('')+'</div>';
+
+  q('#drawerBody').innerHTML=
+    '<div class="spaceToolbar"><button class="primary" id="spaceAdd">+ 프롬프트 추가</button><span class="spaceProgress">'+(activeIndex+1)+' / '+list.length+'</span></div>'+
+    '<p class="spaceHelp">단계를 선택하면 아래 상세 영역이 바뀝니다. 창을 닫지 않고 이전·다음 단계로 이동할 수 있습니다.</p>'+
+    '<div class="spaceList compact">'+list.map(function(p,i){
+      return '<button class="spaceStepButton '+(p.id===active.id?'active':'')+'" data-space-select="'+p.id+'"><span class="spaceStepNo">'+(i+1)+'</span><span class="spaceStepText"><small>'+esc(p.id)+'</small><strong>'+esc(p.title)+'</strong></span></button>'
+    }).join('')+'</div>'+
+    '<div class="spaceDetail" id="spaceDetail">'+spaceDetailHtml(active,activeIndex,list.length)+'</div>';
+
   showDrawer();
+
   q('#spaceAdd').onclick=function(){editItem('prompt',null,name)};
-  document.querySelectorAll('[data-space-item-open]').forEach(function(b){b.onclick=function(){openItem('prompt',b.dataset.spaceItemOpen)}});
-  document.querySelectorAll('[data-space-item-copy]').forEach(function(b){b.onclick=function(){var p=find('prompt',b.dataset.spaceItemCopy);copy(p.content)}});
-  document.querySelectorAll('[data-space-item-edit]').forEach(function(b){b.onclick=function(){editItem('prompt',b.dataset.spaceItemEdit)}});
+  document.querySelectorAll('[data-space-select]').forEach(function(b){
+    b.onclick=function(){openSpace(name,b.dataset.spaceSelect)}
+  });
+  bindSpaceDetail(name,active,activeIndex,list);
+}
+
+function spaceDetailHtml(p,index,total){
+  var refs=(p.references||[]).length;
+  return '<div class="spaceDetailHead"><div><small>STEP '+(index+1)+' · '+esc(p.id)+'</small><h3>'+esc(p.title)+'</h3><p>'+esc(p.description||'')+'</p></div><div class="spaceDetailActions"><button class="primary" id="spaceCopy">프롬프트 복사</button><button class="small" id="spaceEdit">수정</button></div></div>'+
+    (refs?referenceSectionHtml(p):'')+
+    '<div class="promptBox">'+esc(p.content||'')+'</div>'+
+    '<div class="spaceNav"><button class="small" id="spacePrev" '+(index===0?'disabled':'')+'>← 이전 단계</button><button class="small" id="spaceTop">단계 목록 ↑</button><button class="small" id="spaceNext" '+(index===total-1?'disabled':'')+'>다음 단계 →</button></div>';
+}
+
+function bindSpaceDetail(name,p,index,list){
+  var copyBtn=q('#spaceCopy');
+  if(copyBtn)copyBtn.onclick=function(){copy(p.content)};
+  var editBtn=q('#spaceEdit');
+  if(editBtn)editBtn.onclick=function(){editItem('prompt',p.id)};
+  var prev=q('#spacePrev');
+  if(prev&&!prev.disabled)prev.onclick=function(){openSpace(name,list[index-1].id)};
+  var next=q('#spaceNext');
+  if(next&&!next.disabled)next.onclick=function(){openSpace(name,list[index+1].id)};
+  var top=q('#spaceTop');
+  if(top)top.onclick=function(){
+    var first=document.querySelector('.spaceList');
+    if(first)first.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  bindReferenceActions(p);
+  var detail=q('#spaceDetail');
+  if(detail&&window.matchMedia('(max-width:720px)').matches){
+    setTimeout(function(){detail.scrollIntoView({behavior:'smooth',block:'start'})},40);
+  }
 }
 function find(t,id){return t=='site'?data.sites.find(function(x){return x.id==id}):data.prompts.find(function(x){return x.id==id})}function syncOverlay(){var sidebarOpen=q('#sidebar').classList.contains('open');var drawerOpen=!q('#drawer').classList.contains('hidden');q('#overlay').classList.toggle('hidden',!(sidebarOpen||drawerOpen))}function showDrawer(){q('#drawer').classList.remove('hidden');syncOverlay()}function closeDrawer(){q('#drawer').classList.add('hidden');syncOverlay()}
 function openItem(t,id){var x=find(t,id);q('#drawerEye').textContent=t=='site'?(x.siteType||'SITE'):x.id;q('#drawerTitle').textContent=x.title;if(t=='site'){q('#drawerBody').innerHTML='<div class="drawerActions"><button class="primary" id="visit">사이트 열기</button><button class="small" id="editNow">수정</button></div><p>'+esc(x.description)+'</p><h3>사용 메모</h3><div class="promptBox">'+esc(x.notes)+'</div>';q('#visit').onclick=function(){window.open(x.url,'_blank','noopener')}}else{q('#drawerBody').innerHTML='<div class="drawerActions"><button class="primary" id="copyNow">프롬프트 복사</button><button class="small" id="editNow">수정</button><button class="small" id="dupNow">복제</button></div><p>'+esc(x.description)+'</p>'+referenceSectionHtml(x)+'<div class="promptBox">'+esc(x.content)+'</div>';q('#copyNow').onclick=function(){copy(x.content)};q('#dupNow').onclick=function(){duplicate(id)};bindReferenceActions(x)}q('#editNow').onclick=function(){editItem(t,id)};showDrawer()}
