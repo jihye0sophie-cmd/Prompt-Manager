@@ -4,7 +4,7 @@ const GH_SESSION='pm-gh-token';
 const GH_LOCAL='pm-gh-token-remembered';
 const seed={prompts:[{id:'BLOG-01',title:'블로그 원고 작성',category:'blog',description:'블로그 원고 작성용 기본 프롬프트',tags:['블로그','원고'],favorite:true,updated:'2026-10-03',content:'[여기에 블로그 원고 작성 프롬프트를 저장하세요.]'},{id:'BLOG-02',title:'블로그 본문 이미지 제작',category:'blog',description:'완성 원고를 바탕으로 본문 이미지를 제작할 때 사용',tags:['블로그','이미지'],favorite:false,updated:'2026-10-03',content:'[여기에 블로그 이미지 제작 프롬프트를 저장하세요.]'},{id:'SHORTS-01',title:'쇼츠 주제 발굴',category:'shorts',description:'쇼츠 주제 후보를 만들고 발전시키는 프롬프트',tags:['쇼츠','기획'],favorite:false,updated:'2026-10-03',content:'[쇼츠 주제 발굴 프롬프트를 저장하세요.]'},{id:'SHORTS-02',title:'쇼츠 대본 작성',category:'shorts',description:'제목과 주제를 바탕으로 쇼츠용 내레이션 대본 구성',tags:['쇼츠','대본'],favorite:true,updated:'2026-10-03',content:'[쇼츠 대본 작성 프롬프트를 저장하세요.]'},{id:'SHORTS-03',title:'쇼츠 이미지 장면 구성',category:'shorts',description:'대본을 장면별로 나누고 이미지 생성 장면을 설계',tags:['쇼츠','이미지'],favorite:true,updated:'2026-10-03',content:'[쇼츠 이미지 장면 구성 프롬프트를 저장하세요.]'},{id:'SHORTS-04',title:'6초 영상 제작 프롬프트',category:'shorts',description:'선택 장면을 6초 AI 영상으로 만들기 위한 프롬프트',tags:['쇼츠','영상','6초'],favorite:true,updated:'2026-10-03',content:'[6초 영상 제작 프롬프트를 저장하세요.]'},{id:'CODE-01',title:'새 기능 구현 요청',category:'coding',description:'기존 기능을 보존하면서 새 기능을 추가할 때 사용',tags:['바이브코딩','기능추가'],favorite:false,updated:'2026-10-03',content:'[새 기능 구현용 공통 프롬프트를 저장하세요.]'},{id:'CODE-02',title:'버그 분석 및 수정',category:'coding',description:'원인 분석 후 최소 수정으로 해결하는 작업 템플릿',tags:['바이브코딩','버그수정'],favorite:true,updated:'2026-10-03',content:'[버그 분석 및 수정용 프롬프트를 저장하세요.]'}],sites:[{id:'SITE-01',title:'ChatGPT',category:'sites',siteType:'AI / 글쓰기',description:'자료 조사, 글쓰기, 기획, 코드 작업에 사용하는 메인 AI 도구',url:'https://chatgpt.com',notes:'자주 쓰는 방법이나 팁을 여기에 메모하세요.',tags:['AI','글쓰기'],favorite:true,updated:'2026-10-03'}]};
 let data=load();let state={category:'all',filter:'all',query:'',sort:'updated'};const cats=[['all','전체'],['blog','블로그 제작'],['shorts','쇼츠 제작'],['coding','바이브코딩'],['sites','콘텐츠 제작 사이트']];
-function q(s){return document.querySelector(s)}function load(){try{return JSON.parse(localStorage.getItem(KEY))||JSON.parse(JSON.stringify(seed))}catch(e){return JSON.parse(JSON.stringify(seed))}}function save(){localStorage.setItem(KEY,JSON.stringify(data));render();if(getGitHubToken())queueGithubPush()}function today(){return new Date().toISOString().slice(0,10)}function esc(v){return String(v||'').replace(/[&<>\"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m]})}function items(){return data.prompts.map(function(x){return Object.assign({_type:'prompt'},x)}).concat(data.sites.map(function(x){return Object.assign({_type:'site'},x)}))}
+function q(s){return document.querySelector(s)}function load(){try{return JSON.parse(localStorage.getItem(KEY))||JSON.parse(JSON.stringify(seed))}catch(e){return JSON.parse(JSON.stringify(seed))}}function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}function today(){return new Date().toISOString().slice(0,10)}function esc(v){return String(v||'').replace(/[&<>\"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m]})}function items(){return data.prompts.map(function(x){return Object.assign({_type:'prompt'},x)}).concat(data.sites.map(function(x){return Object.assign({_type:'site'},x)}))}
 function renderNav(){q('#nav').innerHTML=cats.map(function(c){var count=c[0]=='all'?items().length:c[0]=='sites'?data.sites.length:data.prompts.filter(function(x){return x.category==c[0]}).length;return '<button data-cat="'+c[0]+'" class="'+(state.category==c[0]?'active':'')+'">'+c[1]+'<span class="count">'+count+'</span></button>'}).join('');q('#nav').querySelectorAll('button').forEach(function(b){b.onclick=function(){state.category=b.dataset.cat;state.filter='all';document.querySelectorAll('.filter').forEach(function(x){x.classList.remove('active')});q('[data-filter=all]').classList.add('active');render()}})}
 function visible(){var a=items();if(state.category!='all')a=a.filter(function(x){return state.category=='sites'?x._type=='site':x._type=='prompt'&&x.category==state.category});if(state.filter=='favorite')a=a.filter(function(x){return x.favorite});var s=state.query.toLowerCase().trim();if(s)a=a.filter(function(x){return [x.id,x.title,x.description,x.content,x.notes,x.siteType].concat(x.tags||[]).join(' ').toLowerCase().includes(s)});a.sort(function(a,b){if(state.sort=='title')return a.title.localeCompare(b.title,'ko');if(state.sort=='id')return a.id.localeCompare(b.id);return (b.updated||'').localeCompare(a.updated||'')});return a}
 function render(){renderNav();var c=cats.find(function(x){return x[0]==state.category})||cats[0];q('#title').textContent=c[1];q('#eyebrow').textContent=state.category=='sites'?'SITE LIBRARY':'PROMPT LIBRARY';var a=visible();q('#stats').innerHTML='<div class="stat"><b>'+a.length+'</b><span>현재 항목</span></div><div class="stat"><b>'+items().filter(function(x){return x.favorite}).length+'</b><span>즐겨찾기</span></div>';q('#grid').innerHTML=a.map(card).join('');q('#empty').classList.toggle('hidden',a.length>0);bind()}
@@ -14,7 +14,7 @@ function find(t,id){return t=='site'?data.sites.find(function(x){return x.id==id
 function openItem(t,id){var x=find(t,id);q('#drawerEye').textContent=t=='site'?(x.siteType||'SITE'):x.id;q('#drawerTitle').textContent=x.title;if(t=='site'){q('#drawerBody').innerHTML='<div class="drawerActions"><button class="primary" id="visit">사이트 열기</button><button class="small" id="editNow">수정</button></div><p>'+esc(x.description)+'</p><h3>사용 메모</h3><div class="promptBox">'+esc(x.notes)+'</div>';q('#visit').onclick=function(){window.open(x.url,'_blank','noopener')}}else{q('#drawerBody').innerHTML='<div class="drawerActions"><button class="primary" id="copyNow">프롬프트 복사</button><button class="small" id="editNow">수정</button><button class="small" id="dupNow">복제</button></div><p>'+esc(x.description)+'</p>'+referenceSectionHtml(x)+'<div class="promptBox">'+esc(x.content)+'</div>';q('#copyNow').onclick=function(){copy(x.content)};q('#dupNow').onclick=function(){duplicate(id)};bindReferenceActions(x)}q('#editNow').onclick=function(){editItem(t,id)};showDrawer()}
 function next(prefix,arr){var n=Math.max.apply(null,[0].concat(arr.map(function(x){var m=(x.id||'').match(/\d+/);return m?Number(m[0]):0})))+1;return prefix+'-'+String(n).padStart(2,'0')}
 function editItem(t,id){var isNew=!id,isSite=t=='site',x=isNew?(isSite?{id:next('SITE',data.sites),title:'',siteType:'',description:'',url:'',notes:'',tags:[]}:{id:'',title:'',category:['blog','shorts','coding'].includes(state.category)?state.category:'blog',description:'',content:'',tags:[]}):find(t,id);q('#drawerEye').textContent=isNew?'NEW':'EDIT';q('#drawerTitle').textContent=isNew?(isSite?'새 사이트':'새 프롬프트'):x.title;q('#drawerBody').innerHTML=formHtml(isSite,x,isNew);showDrawer();q('#form').onsubmit=function(e){e.preventDefault();saveForm(t,id,isNew)};q('#cancel').onclick=function(){isNew?closeDrawer():openItem(t,id)};var d=q('#delete');if(d)d.onclick=function(){remove(t,id)};if(!isSite&&!isNew)bindReferenceEditor(x)}
-function formHtml(isSite,x,isNew){if(isSite)return '<form id="form" class="form"><div class="row"><div><label>ID</label><input id="fid" value="'+esc(x.id)+'" readonly></div><div><label>분류</label><input id="ftype" value="'+esc(x.siteType)+'" placeholder="AI 영상, TTS, SEO"></div></div><div><label>사이트명</label><input id="ftitle" value="'+esc(x.title)+'" required></div><div><label>주소</label><input id="furl" type="url" value="'+esc(x.url)+'" required></div><div><label>설명</label><input id="fdesc" value="'+esc(x.description)+'"></div><div><label>태그 · 쉼표로 구분</label><input id="ftags" value="'+esc((x.tags||[]).join(', '))+'"></div><div><label>내 사용법 / 메모</label><textarea id="fnotes">'+esc(x.notes)+'</textarea></div>'+buttons(isNew)+'</form>';return '<form id="form" class="form"><div class="row"><div><label>ID</label><input id="fid" value="'+esc(x.id)+'" placeholder="비우면 자동 생성" '+(isNew?'':'readonly')+'></div><div><label>카테고리</label><select id="fcat"><option value="blog" '+(x.category=='blog'?'selected':'')+'>블로그 제작</option><option value="shorts" '+(x.category=='shorts'?'selected':'')+'>쇼츠 제작</option><option value="coding" '+(x.category=='coding'?'selected':'')+'>바이브코딩</option></select></div></div><div><label>제목</label><input id="ftitle" value="'+esc(x.title)+'" required></div><div><label>설명</label><input id="fdesc" value="'+esc(x.description)+'"></div><div><label>태그 · 쉼표로 구분</label><input id="ftags" value="'+esc((x.tags||[]).join(', '))+'"></div><div><label>프롬프트</label><textarea id="fcontent" required>'+esc(x.content)+'</textarea></div><p class="note">현재는 이 브라우저에 저장됩니다. GitHub 동기화 저장은 다음 단계에서 연결합니다.</p>'+buttons(isNew)+'</form>'}
+function formHtml(isSite,x,isNew){if(isSite)return '<form id="form" class="form"><div class="row"><div><label>ID</label><input id="fid" value="'+esc(x.id)+'" readonly></div><div><label>분류</label><input id="ftype" value="'+esc(x.siteType)+'" placeholder="AI 영상, TTS, SEO"></div></div><div><label>사이트명</label><input id="ftitle" value="'+esc(x.title)+'" required></div><div><label>주소</label><input id="furl" type="url" value="'+esc(x.url)+'" required></div><div><label>설명</label><input id="fdesc" value="'+esc(x.description)+'"></div><div><label>태그 · 쉼표로 구분</label><input id="ftags" value="'+esc((x.tags||[]).join(', '))+'"></div><div><label>내 사용법 / 메모</label><textarea id="fnotes">'+esc(x.notes)+'</textarea></div>'+buttons(isNew)+'</form>';return '<form id="form" class="form"><div class="row"><div><label>ID</label><input id="fid" value="'+esc(x.id)+'" placeholder="비우면 자동 생성" '+(isNew?'':'readonly')+'></div><div><label>카테고리</label><select id="fcat"><option value="blog" '+(x.category=='blog'?'selected':'')+'>블로그 제작</option><option value="shorts" '+(x.category=='shorts'?'selected':'')+'>쇼츠 제작</option><option value="coding" '+(x.category=='coding'?'selected':'')+'>바이브코딩</option></select></div></div><div><label>제목</label><input id="ftitle" value="'+esc(x.title)+'" required></div><div><label>설명</label><input id="fdesc" value="'+esc(x.description)+'"></div><div><label>태그 · 쉼표로 구분</label><input id="ftags" value="'+esc((x.tags||[]).join(', '))+'"></div><div><label>프롬프트</label><textarea id="fcontent" required>'+esc(x.content)+'</textarea></div><p class="note">프롬프트와 사이트 데이터는 Cloudflare D1에 자동 저장됩니다.</p>'+buttons(isNew)+'</form>'}
 function buttons(isNew){return '<div class="drawerActions">'+(isNew?'':'<button type="button" class="danger" id="delete">삭제</button>')+'<button type="button" class="small" id="cancel">취소</button><button class="primary">저장</button></div>'}
 function tags(v){return String(v||'').split(',').map(function(x){return x.trim()}).filter(Boolean)}function saveForm(t,id,isNew){if(t=='site'){var o={id:q('#fid').value,title:q('#ftitle').value.trim(),category:'sites',siteType:q('#ftype').value.trim(),description:q('#fdesc').value.trim(),url:q('#furl').value.trim(),notes:q('#fnotes').value,tags:tags(q('#ftags').value),favorite:isNew?false:find(t,id).favorite,updated:today()};if(isNew)data.sites.push(o);else Object.assign(find(t,id),o);save();toast('사이트를 저장했습니다.');openItem('site',o.id)}else{var cat=q('#fcat').value;var pid=q('#fid').value.trim();if(isNew&&!pid)pid=next(cat=='blog'?'BLOG':cat=='shorts'?'SHORTS':'CODE',data.prompts);var oldPrompt=isNew?null:find(t,id);var p={id:pid,title:q('#ftitle').value.trim(),category:cat,description:q('#fdesc').value.trim(),content:q('#fcontent').value,tags:tags(q('#ftags').value),favorite:isNew?false:oldPrompt.favorite,updated:today(),references:isNew?[]:(oldPrompt.references||[])};if(isNew)data.prompts.push(p);else Object.assign(find(t,id),p);save();toast('프롬프트를 저장했습니다.');openItem('prompt',p.id)}}
 function remove(t,id){if(!confirm('정말 삭제할까요?'))return;if(t=='site')data.sites=data.sites.filter(function(x){return x.id!=id});else data.prompts=data.prompts.filter(function(x){return x.id!=id});save();closeDrawer();toast('삭제했습니다.')}function duplicate(id){var x=data.prompts.find(function(p){return p.id==id});var pre=x.category=='blog'?'BLOG':x.category=='shorts'?'SHORTS':'CODE';var o=JSON.parse(JSON.stringify(x));o.id=next(pre,data.prompts);o.title+=' 복사본';o.favorite=false;o.updated=today();data.prompts.push(o);save();editItem('prompt',o.id)}function copy(t){navigator.clipboard.writeText(t||'').then(function(){toast('복사했습니다.')})}function toast(m){q('#toast').textContent=m;q('#toast').classList.remove('hidden');clearTimeout(window._toast);window._toast=setTimeout(function(){q('#toast').classList.add('hidden')},1600)}
@@ -23,39 +23,6 @@ q('#search').oninput=function(e){state.query=e.target.value;render()};q('#sort')
 function getGitHubToken(){return sessionStorage.getItem(GH_SESSION)||localStorage.getItem(GH_LOCAL)||''}
 function setGitHubToken(token,remember){sessionStorage.removeItem(GH_SESSION);localStorage.removeItem(GH_LOCAL);if(token){if(remember)localStorage.setItem(GH_LOCAL,token);else sessionStorage.setItem(GH_SESSION,token)}}
 function githubHeaders(token){return {'Accept':'application/vnd.github+json','Authorization':'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'}}
-function decodeB64(s){return decodeURIComponent(escape(atob(s.replace(/\n/g,''))))}
-function encodeB64(s){return btoa(unescape(encodeURIComponent(s)))}
-async function githubGetStore(token){
-  const url='https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/contents/'+GH.path+'?ref='+encodeURIComponent(GH.branch);
-  const res=await fetch(url,{headers:githubHeaders(token)});
-  if(!res.ok)throw new Error('GitHub 불러오기 실패 ('+res.status+')');
-  const body=await res.json();
-  return {sha:body.sha,data:JSON.parse(decodeB64(body.content))};
-}
-async function githubPushStore(message){
-  const token=getGitHubToken();if(!token)return;
-  setSyncBusy(true);
-  try{
-    const current=await githubGetStore(token);
-    const payload=JSON.stringify({prompts:data.prompts,sites:data.sites,meta:{version:1,updated:new Date().toISOString()}},null,2);
-    const url='https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/contents/'+GH.path;
-    const res=await fetch(url,{method:'PUT',headers:githubHeaders(token),body:JSON.stringify({message:message||'Sync Prompt Manager data',content:encodeB64(payload),sha:current.sha,branch:GH.branch})});
-    if(!res.ok){const txt=await res.text();throw new Error('GitHub 저장 실패 ('+res.status+') '+txt.slice(0,100))}
-    setSyncBusy(false,true);toast('GitHub에 동기화했습니다.');
-  }catch(e){setSyncBusy(false,false);toast(e.message||'GitHub 동기화에 실패했습니다.')}
-}
-let pushTimer;
-function queueGithubPush(){clearTimeout(pushTimer);pushTimer=setTimeout(function(){githubPushStore('Update Prompt Manager data')},700)}
-async function githubPullStore(){
-  const token=getGitHubToken();if(!token){toast('먼저 GitHub 토큰을 연결해주세요.');return}
-  setSyncBusy(true);
-  try{
-    const remote=await githubGetStore(token);
-    if(!remote.data||!Array.isArray(remote.data.prompts)||!Array.isArray(remote.data.sites))throw new Error('저장 데이터 형식이 올바르지 않습니다.');
-    data={prompts:remote.data.prompts,sites:remote.data.sites};
-    localStorage.setItem(KEY,JSON.stringify(data));render();setSyncBusy(false,true);toast('GitHub 최신 데이터를 불러왔습니다.');
-  }catch(e){setSyncBusy(false,false);toast(e.message||'GitHub 불러오기에 실패했습니다.')}
-}
 async function testGithubConnection(token){
   const url='https://api.github.com/repos/'+GH.owner+'/'+GH.repo;
   const res=await fetch(url,{headers:githubHeaders(token)});
@@ -66,35 +33,6 @@ function setSyncBusy(busy,ok){
   const dot=document.querySelector('.syncDot');
   if(dot){dot.className='syncDot'+(busy?' busy':ok?' on':'')}
 }
-function openSyncSettings(){
-  const token=getGitHubToken();
-  q('#drawerEye').textContent='GITHUB SYNC';
-  q('#drawerTitle').textContent='GitHub 동기화';
-  q('#drawerBody').innerHTML=
-    '<div class="syncStatus"><span class="syncDot '+(token?'on':'')+'"></span><span>'+(token?'연결 정보 있음':'아직 연결되지 않음')+'</span></div>'+
-    '<form id="syncForm" class="form">'+
-    '<div class="syncGrid"><div><label>저장소</label><input value="'+GH.owner+'/'+GH.repo+'" readonly></div><div><label>브랜치</label><input value="'+GH.branch+'" readonly></div></div>'+
-    '<div><label>GitHub Personal Access Token</label><input id="ghToken" type="password" value="'+esc(token)+'" placeholder="github_pat_... 또는 ghp_..." autocomplete="off"></div>'+
-    '<label style="display:flex;gap:8px;align-items:center"><input id="ghRemember" type="checkbox" style="width:auto" '+(localStorage.getItem(GH_LOCAL)?'checked':'')+'> 이 기기에 연결 정보 기억</label>'+
-    '<p class="syncHint">토큰은 저장소 코드에 기록되지 않습니다. 체크하지 않으면 현재 브라우저 세션에만 보관됩니다. 권한은 이 저장소의 Contents 읽기/쓰기만 있으면 됩니다.</p>'+
-    '<div class="syncActions"><button type="button" class="primary" id="ghConnect">연결 테스트</button><button type="button" class="small" id="ghPull">GitHub에서 불러오기</button><button type="button" class="small" id="ghPush">현재 데이터 GitHub에 저장</button><button type="button" class="danger" id="ghDisconnect">연결 해제</button></div>'+
-    '</form>';
-  showDrawer();
-  q('#ghConnect').onclick=async function(){
-    const t=q('#ghToken').value.trim();if(!t){toast('토큰을 입력해주세요.');return}
-    try{setSyncBusy(true);await testGithubConnection(t);setGitHubToken(t,q('#ghRemember').checked);setSyncBusy(false,true);toast('GitHub 연결에 성공했습니다.')}catch(e){setSyncBusy(false,false);toast(e.message)}
-  };
-  q('#ghPull').onclick=githubPullStore;
-  q('#ghPush').onclick=function(){githubPushStore('Manual Prompt Manager sync')};
-  q('#ghDisconnect').onclick=function(){setGitHubToken('',false);toast('GitHub 연결 정보를 지웠습니다.');openSyncSettings()};
-}
-async function autoPullIfConnected(){
-  if(!getGitHubToken())return;
-  try{const remote=await githubGetStore(getGitHubToken());if(remote.data&&remote.data.prompts&&remote.data.sites){data={prompts:remote.data.prompts,sites:remote.data.sites};localStorage.setItem(KEY,JSON.stringify(data));render()}}catch(e){}
-}
-autoPullIfConnected();
-
-
 function safeName(v){return String(v||'reference').trim().replace(/[^a-zA-Z0-9가-힣_-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)||'reference'}
 function extFromFile(file){var n=(file.name||'').toLowerCase();if(n.endsWith('.png'))return 'png';if(n.endsWith('.webp'))return 'webp';return 'jpg'}
 function referenceBasePath(prompt){var group=(prompt.id||'prompt').toLowerCase().replace(/[^a-z0-9_-]/g,'-');return 'assets/references/'+group+'/'}
@@ -124,7 +62,7 @@ async function fileToBase64(file){
   return btoa(binary);
 }
 async function githubGetContentMeta(path){
-  var token=getGitHubToken();if(!token)throw new Error('GitHub 동기화를 먼저 연결해주세요.');
+  var token=getGitHubToken();if(!token)throw new Error('GitHub 이미지 연결을 먼저 해주세요.');
   var url='https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/contents/'+path+'?ref='+encodeURIComponent(GH.branch);
   var res=await fetch(url,{headers:githubHeaders(token)});
   if(res.status===404)return null;
@@ -132,7 +70,7 @@ async function githubGetContentMeta(path){
   return await res.json();
 }
 async function githubPutBinary(path,file,message,existingSha){
-  var token=getGitHubToken();if(!token)throw new Error('GitHub 동기화를 먼저 연결해주세요.');
+  var token=getGitHubToken();if(!token)throw new Error('GitHub 이미지 연결을 먼저 해주세요.');
   var body={message:message,content:await fileToBase64(file),branch:GH.branch};
   if(existingSha)body.sha=existingSha;
   var url='https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/contents/'+path;
@@ -141,14 +79,14 @@ async function githubPutBinary(path,file,message,existingSha){
   return await res.json();
 }
 async function githubDeleteBinary(path,message){
-  var token=getGitHubToken();if(!token)throw new Error('GitHub 동기화를 먼저 연결해주세요.');
+  var token=getGitHubToken();if(!token)throw new Error('GitHub 이미지 연결을 먼저 해주세요.');
   var meta=await githubGetContentMeta(path);if(!meta)return;
   var url='https://api.github.com/repos/'+GH.owner+'/'+GH.repo+'/contents/'+path;
   var res=await fetch(url,{method:'DELETE',headers:githubHeaders(token),body:JSON.stringify({message:message,sha:meta.sha,branch:GH.branch})});
   if(!res.ok)throw new Error('이미지 삭제 실패 ('+res.status+')');
 }
 async function uploadReferenceFiles(prompt,files){
-  if(!getGitHubToken()){toast('GitHub 동기화를 먼저 연결해주세요.');return}
+  if(!getGitHubToken()){toast('GitHub 이미지 연결을 먼저 해주세요.');return}
   var allowed=files.filter(function(f){return /^image\/(png|jpeg|webp)$/.test(f.type)});
   if(!allowed.length){toast('PNG, JPG, WEBP 이미지만 사용할 수 있습니다.');return}
   setSyncBusy(true);
@@ -173,7 +111,7 @@ function replaceReferencePicker(prompt,index){
 }
 async function replaceReferenceImage(prompt,index,file){
   var ref=(prompt.references||[])[index];if(!ref)return;
-  if(!getGitHubToken()){toast('GitHub 동기화를 먼저 연결해주세요.');return}
+  if(!getGitHubToken()){toast('GitHub 이미지 연결을 먼저 해주세요.');return}
   setSyncBusy(true);
   try{
     var oldPath=ref.path,meta=await githubGetContentMeta(oldPath);
@@ -190,7 +128,7 @@ async function replaceReferenceImage(prompt,index,file){
 async function deleteReferenceImage(prompt,index){
   var ref=(prompt.references||[])[index];if(!ref)return;
   if(!confirm('이 레퍼런스 이미지를 삭제할까요?'))return;
-  if(!getGitHubToken()){toast('GitHub 동기화를 먼저 연결해주세요.');return}
+  if(!getGitHubToken()){toast('GitHub 이미지 연결을 먼저 해주세요.');return}
   setSyncBusy(true);
   try{
     await githubDeleteBinary(ref.path,'Delete reference image for '+prompt.id);
