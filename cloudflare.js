@@ -1,4 +1,6 @@
-const CF_STORE_ENDPOINT='/api/store';
+const CF_WORKER_ORIGIN='https://prompt-manager.jihye0sophie.workers.dev';
+const CF_API_ORIGIN=(location.hostname==='jihye0sophie-cmd.github.io')?CF_WORKER_ORIGIN:'';
+const CF_STORE_ENDPOINT=CF_API_ORIGIN+'/api/store';
 let cfPushTimer=null;
 let cfSaveInFlight=false;
 
@@ -11,7 +13,7 @@ function setCloudStatus(kind,message){
 
 async function cloudLoadStore(){
   try{
-    const res=await fetch(CF_STORE_ENDPOINT,{cache:'no-store'});
+    const res=await fetch(CF_STORE_ENDPOINT,{cache:'no-store',mode:'cors',credentials:'omit'});
     if(!res.ok)throw new Error('Cloudflare 데이터 불러오기 실패 ('+res.status+')');
     const payload=await res.json();
     if(!payload.ok||!payload.data||!Array.isArray(payload.data.prompts)||!Array.isArray(payload.data.sites))throw new Error('Cloudflare 저장 데이터 형식이 올바르지 않습니다.');
@@ -32,7 +34,7 @@ async function cloudPushStore(){
   setCloudStatus('busy','Cloudflare D1에 저장 중...');
   try{
     const payload={prompts:data.prompts,sites:data.sites,meta:{updated:new Date().toISOString(),storage:'cloudflare-d1'}};
-    const res=await fetch(CF_STORE_ENDPOINT,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+    const res=await fetch(CF_STORE_ENDPOINT,{method:'PUT',mode:'cors',credentials:'omit',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
     const result=await res.json().catch(function(){return{}});
     if(!res.ok||!result.ok)throw new Error(result.error||('Cloudflare 저장 실패 ('+res.status+')'));
     setCloudStatus('ok','Cloudflare D1 연결됨');
@@ -63,7 +65,7 @@ async function githubPushStore(){
 }
 
 imageUrl=function(ref){
-  return '/api/reference-image?path='+encodeURIComponent(ref.path)+'&v='+encodeURIComponent(ref.updated||'');
+  return CF_API_ORIGIN+'/api/reference-image?path='+encodeURIComponent(ref.path)+'&v='+encodeURIComponent(ref.updated||'');
 };
 
 function openSyncSettings(){
