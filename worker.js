@@ -1,9 +1,25 @@
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
+const ALLOWED_ORIGINS = new Set([
+  'https://jihye0sophie-cmd.github.io',
+  'https://prompt-manager.jihye0sophie.workers.dev'
+]);
 
-function json(body, init = {}) {
+function corsHeaders(request) {
+  const origin = request.headers.get('Origin') || '';
+  if (!ALLOWED_ORIGINS.has(origin)) return {};
+  return {
+    'access-control-allow-origin': origin,
+    'access-control-allow-methods': 'GET, PUT, OPTIONS',
+    'access-control-allow-headers': 'content-type',
+    'access-control-max-age': '86400',
+    'vary': 'Origin'
+  };
+}
+
+function json(body, init = {}, request) {
   return new Response(JSON.stringify(body), {
     ...init,
-    headers: { ...JSON_HEADERS, ...(init.headers || {}) }
+    headers: { ...JSON_HEADERS, ...corsHeaders(request || new Request('https://prompt-manager.jihye0sophie.workers.dev')), ...(init.headers || {}) }
   });
 }
 
@@ -27,25 +43,29 @@ function isValidStore(value) {
   return value && Array.isArray(value.prompts) && Array.isArray(value.sites);
 }
 
+function isAllowedWriteOrigin(request) {
+  const origin = request.headers.get('Origin') || '';
+  return ALLOWED_ORIGINS.has(origin);
+}
+
 async function handleApi(request, env) {
   if (request.method === 'GET') {
     try {
       const data = await ensureSeed(env, request);
-      return json({ ok: true, data });
+      return json({ ok: true, data }, {}, request);
     } catch (error) {
-      return json({ ok: false, error: error.message || '데이터를 불러오지 못했습니다.' }, { status: 500 });
+      return json({ ok: false, error: error.message || '데이터를 불러오지 못했습니다.' }, { status: 500 }, request);
     }
   }
 
   if (request.method === 'PUT') {
-    const origin = request.headers.get('Origin');
-    if (!origin || new URL(origin).host !== new URL(request.url).host) {
-      return json({ ok: false, error: '허용되지 않은 저장 요청입니다.' }, { status: 403 });
+    if (!isAllowedWriteOrigin(request)) {
+      return json({ ok: false, error: '허용되지 않은 저장 요청입니다.' }, { status: 403 }, request);
     }
     try {
       const body = await request.json();
       if (!isValidStore(body)) {
-        return json({ ok: false, error: '저장 데이터 형식이 올바르지 않습니다.' }, { status: 400 });
+        return json({ ok: false, error: '저장 데이터 형식이 올바르지 않습니다.' }, { status: 400 }, request);
       }
 
       const next = {
@@ -63,21 +83,27 @@ async function handleApi(request, env) {
         'INSERT OR REPLACE INTO app_state (id, data, updated_at) VALUES (?, ?, ?)'
       ).bind('main', JSON.stringify(next), next.meta.updated).run();
 
-      return json({ ok: true, updated: next.meta.updated });
+      return json({ ok: true, updated: next.meta.updated }, {}, request);
     } catch (error) {
-      return json({ ok: false, error: error.message || '데이터를 저장하지 못했습니다.' }, { status: 500 });
+      return json({ ok: false, error: error.message || '데이터를 저장하지 못했습니다.' }, { status: 500 }, request);
     }
   }
 
-  return json({ ok: false, error: 'Method not allowed' }, { status: 405 });
+  return json({ ok: false, error: 'Method not allowed' }, { status: 405 }, request);
 }
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (request.method === 'OPTIONS' && url.pathname.startsWith('/api/')) {
+      const headers = corsHeaders(request);
+      if (!Object.keys(headers).length) return new Response(null, { status: 403 });
+      return new Response(null, { status: 204, headers });
+    }
+
     if (url.pathname === '/api/health') {
-      return json({ ok: true, service: 'prompt-manager', storage: 'd1' });
+      return json({ ok: true, service: 'prompt-manager', storage: 'd1' }, {}, request);
     }
 
     if (url.pathname === '/api/store') {
@@ -87,12 +113,13 @@ export default {
     if (url.pathname === '/api/reference-image') {
       const path = url.searchParams.get('path') || '';
       if (!/^assets\/references\/[a-z0-9_-]+\/[a-zA-Z0-9가-힣_.-]+$/.test(path)) {
-        return new Response('Invalid image path', { status: 400 });
+        return new Response('Invalid image path', { status: 400, headers: corsHeaders(request) });
       }
       const rawUrl = 'https://raw.githubusercontent.com/jihye0sophie-cmd/Prompt-Manager/main/' + path;
       const upstream = await fetch(rawUrl, { cf: { cacheTtl: 3600, cacheEverything: true } });
-      if (!upstream.ok) return new Response('Image not found', { status: upstream.status });
+      if (!upstream.ok) return new Response('Image not found', { status: upstream.status, headers: corsHeaders(request) });
       const headers = new Headers(upstream.headers);
+      Object.entries(corsHeaders(request)).forEach(([k,v])=>headers.set(k,v));
       headers.set('cache-control', 'public, max-age=3600');
       return new Response(upstream.body, { status: 200, headers });
     }
