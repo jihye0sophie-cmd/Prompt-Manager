@@ -38,6 +38,10 @@ async function handleApi(request, env) {
   }
 
   if (request.method === 'PUT') {
+    const origin = request.headers.get('Origin');
+    if (!origin || new URL(origin).host !== new URL(request.url).host) {
+      return json({ ok: false, error: '허용되지 않은 저장 요청입니다.' }, { status: 403 });
+    }
     try {
       const body = await request.json();
       if (!isValidStore(body)) {
