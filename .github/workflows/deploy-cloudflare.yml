@@ -31,6 +31,10 @@ jobs:
           cp -R assets public/assets
           cp -R data public/data
 
+      - name: Inspect reference images
+        run: |
+          find assets/references -type f -maxdepth 3 -print -exec file {} \;
+
       - name: Create Wrangler config
         env:
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
